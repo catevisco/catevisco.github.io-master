@@ -1,0 +1,51 @@
+ /* Black nav bar */
+    .navbar-default{
+        background:white;
+        border-color:white;
+        position: relative;
+        z-index: 1000;
+    }
+    .navbar-default .navbar-nav>.active>a, 
+    .navbar-default .navbar-nav>.active>a:focus, 
+    .navbar-default .navbar-nav>.active>a:hover{
+        background: #000;
+    }
+
+
+    /* Main header */
+    #main-header{
+       background-image: url(img/tracks1.jpg);
+       background-size: cover;
+       background-position: center;
+       text-align: center;
+       color:#FFFAF0;
+       font-family: 'Alegreya', serif;
+       min-height:720px;
+       padding-top: 150px;
+
+    }
+    #main-header h1{
+        /text-transform: uppercase;
+        font-size: 100px;
+    }
+    #main-header h2{
+        font-family: "Open Sans", Helvetica, Arial, sans-serif;
+        font-weight: 100;
+        font-size:40px
+    }
+    #header-container{
+        position: relative;
+        top: 0;
+        height: 100%;
+        width: 100%;
+        z-index: 1;
+    }
+        
+    li {
+    margin-left:110px;  
+    }
+
+    p{
+      font-size: 16px;
+    }
+        

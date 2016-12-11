@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">     
+    <title>Serie A</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">  
+    <link rel="stylesheet" type="text/css" href="d3-tip.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js"></script>
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">  
+
+    <style type="text/css">
+
+    .axis text{
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 12px;
+      text-anchor: end;
+    }
+    .axis path{
+      fill:none;
+      stroke:black;
+      stroke-width: 0.5px;
+      shape-rendering: crispEdges;
+    }
+    .bar{
+        stroke: none;
+        fill: "steelblue";
+    }
+    .textlabel{
+        font-family: Helvetica, Arial, sans-serif;
+        font-size:13px;
+        font-weight: bold;
+        text-anchor: middle;
+    }
+
+    .title {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size:22px;
+        font-weight: normal;
+        color: rgba(0, 0, 0, 0.7);
+        
+    }
+
+    h1,h3,p {
+
+        color: rgba(0, 0, 0, 0.7);
+
+    }
+
+
+    #buttons {
+        margin-top:5%;
+        margin-left: 5%;
+     }
+
+     #GoalScored {
+
+        margin-left: 7%;
+
+     }
+
+
+     #GoalConceded {
+
+        margin-left: 5%;
+
+     }
+
+    #MatchTied {
+
+        margin-left: 4%;
+
+     }
+
+
+     #MatchLost {
+
+        margin-left: 5%;
+
+     }
+
+
+
+
+    </style>
+</head>
+
+<body>
+    
+     <div id="info1" class="container">
+      
+       
+        <div id="SerieA">
+        <h1>Italian "Serie A" in a Nutshell</h1>
+        <div class="row">
+        <div class="col-sm-5 col-sm-offset-1">
+ 
+             
+             <h3>Season 2014-2015</h3>
+
+             <p> Here is a data-portrait of the Italian Soccer League, "Serie A". The teams are positioned based on how much they are spending in salaries for their players. If you click on the buttons you'll get if the investement has payed off or it was all a waste of money. If you want to know how much each time is actually spending, just pass your mouse over each bar and be ready for an heart attack: those ar millions of EURO.</p>
+             <br />
+              <br />
+               <br />
+
+         </div>
+          <div id="buttons" class="col-sm-5">
+                <button id="Ranking" class="btn btn-default">Ranking</button>
+                <button id="GoalScored" class="btn btn-default">Goals Scored</button>
+                <button id="GoalConceded" class="btn btn-default">Goals Conceded</button>
+                <br/>
+                 <br/>
+                <button id="MatchWon" class="btn btn-default">Matches Won</button>
+                <button id="MatchTied" class="btn btn-default">Matches Tied</button>
+                <button id="MatchLost" class="btn btn-default">Matches Lost</button>
+                 
+                
+
+        </div>
+    </div>
+
+</div>
+  <div id="chart"></div>
+
+    </div> <!-- end container -->
+
+ 
+    <!--<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>-->
+  
+    <script src="d3.js"></script>
+    <script src="d3.min.js"></script>
+    <script src="d3-tip.js"></script>
+
+
+    <script>
+       var margin = {top:20, right:60, bottom:40, left:90},
+           width  = 1300,
+           height = 320,
+           alldata = [];
+
+        var svg = d3.select("body")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            //.attr("viewBox", "0 0 " + width + " " + height);
+
+        var yScale = d3.scale.linear()
+        .range([height - margin.top - margin.bottom, 0]);
+
+        var xScale = d3.scale.ordinal()
+        .rangeRoundBands([0, width - margin.right - margin.left], .1);
+
+        var tip = d3.tip()
+                .attr("class", "d3-tip")
+                 .html(function(d){
+
+              return "<strong>Millions spent: </strong>" +d.Millions + "<br>" + "<strong>Points: </strong>" + d.Points;
+
+                    });
+
+    svg.call(tip);
+
+    var xAxis = d3.svg.axis()
+    .scale(xScale)
+    .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+    .scale(yScale)
+    .orient("left")
+    .ticks(3);
+
+    
+    var turn = 0;
+
+    columns = ["Ranking", "Won", "Tie", "Lost", "Scored", "Conceded"];
+    colors = {"Ranking": "green", "Won": "steelblue", "Tie": "Pink","Lost": "blue", "Scored": "red", "Conceded": "orange"};
+    titles = {"Ranking": "Ranking", "Won": "Matches Won", "Tie": "Matches Tied", "Lost": "Matches Lost", "Scored": "Goals Scored", "Conceded": "Goals Conceded"};
+
+    function display_data(columnid) {
+
+        column = columns[columnid];
+
+        d3.selectAll(".bar")
+        .transition()
+        .duration(600)
+        .attr("y", function(d){ return yScale(d[column]); })
+        .attr("height", function(d){ return height - margin.top - margin.bottom - yScale(d[column]); })
+        .style({"fill": colors[column]});
+
+        d3.selectAll(".title")
+        .transition()
+        .text(titles[column]);
+
+        d3.selectAll(".textlabel")
+        .transition()
+        .duration(700)
+        .attr("y", function(d){ return yScale(d[column]) - 3; })
+        .text(function(d){ return d3.format(",")(d[column]); });
+    }
+
+    
+
+    d3.csv("soccer.csv", function(error, data){
+        alldata = data;
+
+        console.log(data);
+
+        yScale.domain([0,  60]);
+        xScale.domain(data.map(function(d){ return d["Team"]; }));
+
+        svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .selectAll(".bar")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", function(d){ return xScale(d["Team"]); }) 
+            .attr("width", function(d){ return xScale.rangeBand(); })
+            .style({"fill":"steelblue"})
+            .on("mouseover", tip.show)
+            .on("mouseout", tip.hide)
+            // .on("click", function(d){
+            //                         turn = turn + 1;
+            //                         turn = turn % columns.length;   
+            //                         display_data(turn);
+            //                         });
+
+
+       // svg.append("g")
+         //   .attr("class", "y axis")
+           // .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            //.call(yAxis);
+
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(" + margin.left + "," + (height - margin.bottom) + ")")
+            .call(xAxis);
+
+        svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .selectAll(".textlabel")
+            .data(data)
+            .enter()
+            .append("text")
+            .attr("class", "textlabel")
+            .attr("x", function(d){ return xScale(d["Team"]) + (xScale.rangeBand()/2); })
+            .style("text-anchor", "middle");
+            
+          
+        svg.append("g")
+            .attr("transform", "translate(" + (width/2) + ", 22)")
+            .attr("y", 100)
+            .append("text")
+            .attr("class", "title")
+            .style({"text-anchor":"middle", "font-family":"Helvetica", "font-weight":"600"});
+
+        display_data(turn); // turn = 0 here.
+
+            
+
+    });
+
+
+        d3.select("#Ranking")
+            .on("click",function(d){
+                turn = 0;
+                turn = turn % columns.length;   
+                display_data(turn, d);
+            })
+
+        d3.select("#MatchWon")
+            .on("click",function(d){
+                turn = 1;
+                turn = turn % columns.length;   
+                display_data(turn, d);
+            })
+
+
+
+        d3.select("#MatchTied")
+            .on("click",function(d){
+                turn = 2;
+                turn = turn % columns.length;   
+                display_data(turn, d);
+            })
+
+        
+        d3.select("#MatchLost")
+            .on("click",function(d){
+                turn = 3;
+                turn = turn % columns.length;   
+                display_data(turn, d);
+            })
+
+        d3.select("#GoalScored")
+            .on("click",function(d){
+                turn = 4;
+                turn = turn % columns.length;   
+                display_data(turn, d);
+            })
+
+        d3.select("#GoalConceded")
+            .on("click",function(d){
+                turn = 5;
+                turn = turn % columns.length;   
+                display_data(turn, d);
+            })
+    </script>
+</body>
+</html>

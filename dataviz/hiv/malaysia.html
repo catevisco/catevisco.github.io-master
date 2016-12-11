@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Malaysia</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">  
+    <style type="text/css">
+
+    .axis text{
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 12px;
+      text-anchor: end;
+    }
+    .axis path{
+      fill:none;
+      stroke:black;
+      stroke-width: 0.5px;
+      shape-rendering: crispEdges;
+    }
+    .bar{
+        stroke: none;
+        fill: "steelblue";
+    }
+    .textlabel{
+        font-family: Helvetica, Arial, sans-serif;
+        font-size:14px;
+        font-weight: bold;
+        text-anchor: middle;
+    }
+
+    h3 {
+
+        font-size:20px;
+
+    }
+    #buttons{
+        text-align: center;
+    }
+
+
+    
+    </style>
+</head>
+<body>
+    <div id="info1" class="container">
+
+        <div>
+            <h1>HIV in Malaysia</h1>
+        </div>
+        <br/>
+        <div id="chart"></div>
+        <div id="buttons">
+                        <button id="NewInfections" class="btn btn-warning">New Infections</button>
+                        <button id="Deaths" class="btn btn-danger">Deaths</button>
+                        <p>Source data: <b><a href="http://www.unaids.org/en/dataanalysis/datatools/aidsinfo/" target="_blank"> UNAIDS</a></b></p>
+                        <br />
+
+        </div>
+        <div class="row" id="categories">
+             <div class="col-sm-5">
+                <h3>General Situation</h3>
+                 <p>In Malaysia, in 2013 there were 86,000 people living with HIV of which 10,000 women, only 17,000 were receiving ART. Almost 5,900 people died because of AIDS.</p>
+             </div>
+             <div class="col-sm-5 col-sm-offset-1">
+                <h3> HIV among people at risk</h3>
+                <p>HIV prevalence among injection drug users is 19%, condom use is 27%, and safe injecting rate is 82%</p>
+                <p>Prevalence among female sex workers is 4% and among men who have sex with men (over 25 year old) is 16%</p>
+                <br />
+                <br />
+            </div>
+        </div>
+        <div >
+                <p class="text">  </p>
+                <br />
+                <p id="back"><a href="index.html" class="btn btn-default">Go back to main page</a></p>
+                <br />
+                <br />
+        </div>
+
+
+
+    </div> <!-- end container -->
+
+
+
+
+    <script src="//d3js.org/d3.v3.min.js"></script>
+        <!--<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>-->
+  
+    <script src="d3.js"></script>
+    <script src="d3.min.js"></script>
+    <script src="d3-tip.js"></script>
+    <script>
+       var  margin  = {top:50, right:60, bottom:40, left:90},
+            width   = 1200,
+            height  = 300,
+            alldata = [];
+
+        var svg = d3.select("#chart")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    //.attr("viewBox", "0 0 " + width + " " + height);
+
+    var yScale = d3.scale.linear()
+    .range([height - margin.top - margin.bottom, 0]);
+
+    var xScale = d3.scale.ordinal()
+    .rangeRoundBands([0, width - margin.right - margin.left], .1);
+
+    var xAxis = d3.svg.axis()
+    .scale(xScale)
+    .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+    .scale(yScale)
+    .orient("left")
+    .ticks(3);
+
+    
+    var turn = 0;
+
+    columns = ["New Infections", "Deaths"];
+    colors = {"New Infections": "orange", "Deaths": "red"};
+    titles = {"New Infections": "Estimated new HIV cases All ages 1990 - 2011", "Deaths": "Annual number of AIDS deaths 1990 - 2011"};
+    function display_data(columnid, data) {
+
+        column = columns[columnid];
+
+        //only change domain if its a click
+        if(arguments.length > 0){
+
+            //change the domain for the maximum value of the column picked
+            yScale.domain([0, d3.max(alldata.map(function(d){ return +d[column]; }))]);
+            
+        }
+        
+
+        d3.selectAll(".bar")
+        .transition()
+        .duration(600)
+        .attr("y", function(d){ return yScale(d[column]); })
+        .attr("height", function(d){ return height - margin.top - margin.bottom - yScale(d[column]); })
+        .style({"fill": colors[column]});
+
+        d3.selectAll(".title")
+        .transition()
+        .text(titles[column]);
+
+        d3.selectAll(".textlabel")
+        .transition()
+        .duration(700)
+        .attr("y", function(d){ return yScale(d[column]) - 3; })
+        .text(function(d){ return d3.format(",")(d[column]); });
+    }
+
+    
+
+    d3.csv("MalaysiaHiv.csv", function(error, data){
+
+        alldata = data;
+
+        console.log(data);
+
+                
+                //convert numerical values from strings to numbers
+                data = data.map(function(d){ d.value = +d["New Infections"]; return d; });
+                data = data.map(function(d){ d.value = +d["Deaths"]; return d; });
+
+
+        yScale.domain([0,  d3.max(data.map(function (d){return +d.Prevalence;}))]);
+        xScale.domain(data.map(function(d){ return d["year"]; }));
+
+        svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .selectAll(".bar")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", function(d){ return xScale(d["year"]); })
+            
+            
+            .attr("width", function(d){ return xScale.rangeBand(); })
+            .style({"fill":"steelblue"})
+         //    .on("click", function(d){
+
+                                //      turn = turn + 1;
+                                //     turn = turn % columns.length;   
+                                //     display_data(turn, d);
+                
+       //      });
+
+         d3.select("#NewInfections")
+            .on("click",function(d){
+                turn = 0;
+                turn = turn % columns.length;   
+                display_data(turn, d);
+            })
+
+        d3.select("#Deaths")
+            .on("click",function(d){
+                turn = 1;
+                turn = turn % columns.length;   
+                display_data(turn, d);
+            })
+       
+
+       // svg.append("g")
+         //   .attr("class", "y axis")
+           // .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            //.call(yAxis);
+
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(" + margin.left + "," + (height - margin.bottom) + ")")
+            .call(xAxis);
+
+        svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .selectAll(".textlabel")
+            .data(data)
+            .enter()
+            .append("text")
+            .attr("class", "textlabel")
+            .attr("x", function(d){ return xScale(d["year"]) + (xScale.rangeBand()/2); })
+            .style("text-anchor", "middle");
+            
+          
+        svg.append("g")
+            .attr("transform", "translate(" + (width/2) + ", 15)")
+            .append("text")
+            .attr("class", "title")
+            .style({"text-anchor":"middle", "font-family":"Arial", "font-weight":"800"});
+
+        display_data(turn); // turn = 0 here.
+
+            
+
+    });
+
+
+    </script>
+</body>
+</html>

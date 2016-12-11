@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css"> 
+<link rel="stylesheet" type="text/css" href="d3-tip.css">
+<style>
+
+
+
+</style>
+<body>
+
+ <!--<script src="//d3js.org/topojson.v1.min.js"></script>
+<script src="//d3js.org/colorbrewer.v1.min.js"></script>
+   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>-->
+  
+    <script src="d3.js"></script>
+    <script src="d3.min.js"></script>
+    <script src="d3-tip.js"></script>
+    <script src="topojson.js"></script>
+    <script src="colorbrewer.js"></script>
+
+<div id="buttons">
+                  <button id="prevalence" class="btn btn-default">Prevalence</button>
+                  <button id="art" class="btn btn-default">ART Coverage</button>
+                  <br />
+                  <br />
+                  <p style="margin-left:5%">Source data: <b><a href="http://www.unaids.org/" target="_blank"> UNAIDS</a></b></p>
+                  <br />
+
+</div>
+
+<script>
+
+var width = 1200,
+	height = 900;
+
+var svg = d3.select('body').append('svg')
+    .attr('width', width)
+    .attr('height', height);
+
+var projection = d3.geo.equirectangular()
+.center([103.5,15])
+.scale(1000)
+.translate([width / 4, height / 4]);
+
+
+// var color = {
+// 	"Malaysia" : "red",
+// 	"Philippines" : "pink",
+// 	"Vietnam" : "blue",
+// 	"Myanmar" :"green",
+// 	"Laos" : "steelblue",
+// 	"Thailand" : "yellow",
+// 	"Indonesia" : "orange",
+// 	"Cambodia" : "black",
+// }
+
+
+var tip = d3.tip()
+		.attr("class", "d3-tip")
+		.html(function(d){
+						return d.properties.sovereignt + "<br>" + "Prevalence:" + "<br>" + d.properties.PREVALENCE;
+
+				});
+
+
+	svg.call(tip);
+
+var colorMap = d3.scale.linear()
+.domain([0, 0.3, 0.6, 0.9, 1.2])
+.range(["#c6dbef", "#9ecae1", "#6baed6", "#3182bd" ,"#08519c"]);
+
+var colorMapArt = d3.scale.linear()
+.domain([24, 32, 37, 51, 53, 58, 71, 92])
+.range(["#C5E3BF", "#A9C9A4", "#7BBF6A","#55AE3A", "#4CBB17", "#3D8B37", "#395D33", "#3B5E2B"]);
+
+var gotourl = {
+	
+
+	"Malaysia" : "malaysia.html",
+	"Philippines" : "philippines.html",
+	"Vietnam" : "Vietnam.html",
+	"Myanmar" :"myanmar.html",
+	"Laos" : "laos.html",
+	"Thailand" : "thailand.html",
+	"Indonesia" : "indonesia.html",
+	"Cambodia" : "cambodia.html"
+}
+
+var path = d3.geo.path()
+	.projection(projection);
+
+d3.json('asia.json', function(error, asia) { //world = temporary
+
+
+
+	console.log(topojson.feature(asia, asia.objects.asia));
+	svg.selectAll("path")
+		.data(topojson.feature(asia, asia.objects.asia).features)
+		.enter()
+		.append('path')
+		.attr('class', 'country')
+		.attr('d', path)
+ 		.style("fill", function(d){ return colorMap(d.properties.PREVALENCE)})
+		.style("cursor", "pointer")
+		.on("mouseover", tip.show)
+
+		/* function(d){
+			
+			console.log(d.properties);
+
+
+			d3.select(this)
+			  .style("opacity", "0.5");
+		})*/
+		.on("mouseout", tip.hide) /* function(d) {
+
+			d3.select(this)
+			  .style("opacity", "1");
+
+
+
+		})*/
+		.on("click", function(d){
+
+			top.location.href = gotourl[d.properties.sovereignt];
+
+		});
+
+		d3.select("#prevalence")
+             .on("click",function(){
+             	d3.selectAll(".country")
+            		.style("fill", function(d){ return colorMap(d.properties.PREVALENCE)});
+
+            	tip.html(function(d){return d.properties.sovereignt + "<br>" + "Prevalence:" + "<br>" + d.properties.PREVALENCE;
+
+            	});
+            });
+
+        d3.select("#art")
+            .on("click",function(){
+             	d3.selectAll(".country")
+            		.style("fill", function(d){ return colorMapArt(d.properties.ART_COVERA)});
+
+            	tip.html(function(d){return d.properties.sovereignt + "<br>" + "ART Coverage:" + "<br>" + d.properties.ART_COVERA;
+
+            	});
+            });
+
+});
+</script>
+</body>
+</html>
